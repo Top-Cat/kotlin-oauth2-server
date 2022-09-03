@@ -1,8 +1,8 @@
 package nl.myndocs.oauth2.ktor.feature
 
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.ApplicationFeature
-import io.ktor.application.call
+import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.BaseApplicationPlugin
+import io.ktor.server.application.call
 import io.ktor.util.AttributeKey
 import nl.myndocs.oauth2.config.Configuration
 import nl.myndocs.oauth2.config.ConfigurationBuilder
@@ -12,7 +12,7 @@ import nl.myndocs.oauth2.ktor.feature.request.KtorCallContext
 class Oauth2ServerFeature(configuration: Configuration) {
     val callRouter = configuration.callRouter
 
-    companion object Feature : ApplicationFeature<ApplicationCallPipeline, KtorConfiguration, Oauth2ServerFeature> {
+    companion object Feature : BaseApplicationPlugin<ApplicationCallPipeline, KtorConfiguration, Oauth2ServerFeature> {
         override val key = AttributeKey<Oauth2ServerFeature>("Oauth2ServerFeature")
 
         override fun install(pipeline: ApplicationCallPipeline, configure: KtorConfiguration.() -> Unit): Oauth2ServerFeature {

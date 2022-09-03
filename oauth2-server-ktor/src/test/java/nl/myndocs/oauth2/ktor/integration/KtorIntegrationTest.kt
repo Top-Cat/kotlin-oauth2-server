@@ -1,6 +1,6 @@
 package nl.myndocs.oauth2.ktor.integration
 
-import io.ktor.application.install
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
@@ -9,7 +9,6 @@ import nl.myndocs.oauth2.ktor.feature.Oauth2ServerFeature
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import java.net.BindException
-import java.util.concurrent.TimeUnit
 
 
 class KtorIntegrationTest : BaseIntegrationTest() {
@@ -37,7 +36,7 @@ class KtorIntegrationTest : BaseIntegrationTest() {
 
     @AfterEach
     fun after() {
-        server!!.stop(0, 10, TimeUnit.SECONDS)
+        server!!.stop(0, 10 * 1000)
     }
 
 }

@@ -61,7 +61,7 @@ abstract class BaseIntegrationTest {
         val response = client.newCall(request)
                 .execute()
 
-        val values = objectMapper.readMap(response.body()!!.string())
+        val values = objectMapper.readMap(response.body!!.string())
 
         assertThat(values["access_token"], `is`(notNullValue()))
         assertThat(UUID.fromString(values["access_token"] as String), `is`(instanceOf(UUID::class.java)))
@@ -100,7 +100,7 @@ abstract class BaseIntegrationTest {
 
         val body = FormBody.Builder()
                 .add("grant_type", "authorization_code")
-                .add("code", response.header("location")!!.asQueryParameters()["code"])
+                .add("code", response.header("location")!!.asQueryParameters().getOrDefault("code", ""))
                 .add("redirect_uri", "http://localhost:8080/callback")
                 .add("client_id", "testapp")
                 .add("client_secret", "testpass")
@@ -116,7 +116,7 @@ abstract class BaseIntegrationTest {
         val tokenResponse = client.newCall(tokenRequest)
                 .execute()
 
-        val values = objectMapper.readMap(tokenResponse.body()!!.string())
+        val values = objectMapper.readMap(tokenResponse.body!!.string())
         assertThat(values["access_token"], `is`(notNullValue()))
         assertThat(UUID.fromString(values["access_token"] as String), `is`(instanceOf(UUID::class.java)))
 
@@ -140,7 +140,7 @@ abstract class BaseIntegrationTest {
         val tokenResponse = client.newCall(tokenRequest)
                 .execute()
 
-        val values = objectMapper.readMap(tokenResponse.body()!!.string())
+        val values = objectMapper.readMap(tokenResponse.body!!.string())
         assertThat(values["access_token"], `is`(notNullValue()))
         assertThat(UUID.fromString(values["access_token"] as String), `is`(instanceOf(UUID::class.java)))
 

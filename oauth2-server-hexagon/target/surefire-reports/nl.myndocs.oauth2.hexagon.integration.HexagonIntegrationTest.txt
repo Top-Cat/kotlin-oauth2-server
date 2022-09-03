@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: nl.myndocs.oauth2.hexagon.integration.HexagonIntegrationTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.139 s - in nl.myndocs.oauth2.hexagon.integration.HexagonIntegrationTest
