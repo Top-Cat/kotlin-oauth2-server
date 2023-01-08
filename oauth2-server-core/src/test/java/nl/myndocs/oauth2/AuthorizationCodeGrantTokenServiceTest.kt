@@ -93,8 +93,7 @@ internal class AuthorizationCodeGrantTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), identity, clientId, requestScopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), identity, clientId, requestScopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { tokenStore.consumeCodeToken(code) } returns codeToken
         every { refreshTokenConverter.convertToToken(identity, clientId, requestScopes) } returns refreshToken
@@ -104,19 +103,9 @@ internal class AuthorizationCodeGrantTokenServiceTest {
     }
 
     @Test
-    fun nonExistingClientException() {
-        every { clientService.clientOf(clientId) } returns null
-
-        assertThrows(
-                InvalidClientException::class.java
-        ) { grantingCall.authorize(authorizationCodeRequest) }
-    }
-
-    @Test
     fun invalidClientException() {
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.AUTHORIZATION_CODE))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns false
+        every { clientService.clientOf(clientId, clientSecret) } returns null
 
         assertThrows(
                 InvalidClientException::class.java
@@ -133,8 +122,7 @@ internal class AuthorizationCodeGrantTokenServiceTest {
         )
 
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.AUTHORIZATION_CODE))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
 
         assertThrows(
                 InvalidRequestException::class.java
@@ -151,8 +139,7 @@ internal class AuthorizationCodeGrantTokenServiceTest {
         )
 
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.AUTHORIZATION_CODE))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
 
         assertThrows(
                 InvalidRequestException::class.java
@@ -170,8 +157,7 @@ internal class AuthorizationCodeGrantTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), identity, clientId, requestScopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), identity, clientId, requestScopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { tokenStore.consumeCodeToken(code) } returns codeToken
         every { refreshTokenConverter.convertToToken(identity, clientId, requestScopes) } returns refreshToken
         every { accessTokenConverter.convertToToken(identity, clientId, requestScopes, refreshToken) } returns accessToken
@@ -185,8 +171,7 @@ internal class AuthorizationCodeGrantTokenServiceTest {
     fun invalidCodeException() {
         val client = Client(clientId, setOf("scope1", "scope2"), setOf(), setOf(AuthorizedGrantType.AUTHORIZATION_CODE))
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { tokenStore.consumeCodeToken(code) } returns null
 
         assertThrows(

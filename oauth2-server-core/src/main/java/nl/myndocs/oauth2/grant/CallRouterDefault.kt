@@ -6,6 +6,7 @@ import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.identity.Identity
+import nl.myndocs.oauth2.identity.TokenInfo
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientCredentialsRequest

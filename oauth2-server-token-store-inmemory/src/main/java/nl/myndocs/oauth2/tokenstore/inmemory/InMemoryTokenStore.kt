@@ -1,8 +1,15 @@
 package nl.myndocs.oauth2.tokenstore.inmemory
 
-import nl.myndocs.oauth2.token.*
+import nl.myndocs.oauth2.client.ClientService
+import nl.myndocs.oauth2.exception.InvalidClientException
+import nl.myndocs.oauth2.identity.TokenInfo
+import nl.myndocs.oauth2.token.AccessToken
+import nl.myndocs.oauth2.token.CodeToken
+import nl.myndocs.oauth2.token.ExpirableToken
+import nl.myndocs.oauth2.token.RefreshToken
+import nl.myndocs.oauth2.token.TokenStore
 
-class InMemoryTokenStore : TokenStore {
+class InMemoryTokenStore(private val clientService: ClientService?) : TokenStore {
     private val accessTokens = mutableMapOf<String, AccessToken>()
     private val codes = mutableMapOf<String, CodeToken>()
     private val refreshTokens = mutableMapOf<String, RefreshToken>()
@@ -17,6 +24,15 @@ class InMemoryTokenStore : TokenStore {
 
     override fun accessToken(token: String): AccessToken? =
             locateToken(accessTokens, token)
+
+    override fun tokenInfo(token: String) =
+        accessToken(token)?.let { accessToken ->
+            TokenInfo(
+                accessToken.identity,
+                clientService?.clientOf(accessToken.clientId) ?: throw InvalidClientException(),
+                accessToken.scopes
+            )
+        }
 
     override fun storeCodeToken(codeToken: CodeToken) {
         codes[codeToken.codeToken] = codeToken

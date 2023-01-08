@@ -7,11 +7,17 @@ import nl.myndocs.oauth2.client.inmemory.InMemoryClient
 import nl.myndocs.oauth2.config.ConfigurationBuilder
 import nl.myndocs.oauth2.identity.inmemory.InMemoryIdentity
 import nl.myndocs.oauth2.tokenstore.inmemory.InMemoryTokenStore
-import okhttp3.*
-import org.hamcrest.CoreMatchers.*
+import okhttp3.Credentials
+import okhttp3.FormBody
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.hamcrest.CoreMatchers.instanceOf
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 abstract class BaseIntegrationTest {
     var localPort: Int? = null
@@ -34,8 +40,7 @@ abstract class BaseIntegrationTest {
                             AuthorizedGrantType.REFRESH_TOKEN
                     )
                 }
-        tokenStore = InMemoryTokenStore()
-
+        tokenStore = InMemoryTokenStore(clientService)
     }
 
     private val objectMapper = ObjectMapper().registerKotlinModule()

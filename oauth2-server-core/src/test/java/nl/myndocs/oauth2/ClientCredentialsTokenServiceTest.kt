@@ -76,8 +76,7 @@ internal class ClientCredentialsTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), null, clientId, scopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), null, clientId, scopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { refreshTokenConverter.convertToToken(null, clientId, scopes) } returns refreshToken
         every { accessTokenConverter.convertToToken(null, clientId, scopes, refreshToken) } returns accessToken
 
@@ -87,19 +86,8 @@ internal class ClientCredentialsTokenServiceTest {
     }
 
     @Test
-    fun nonExistingClientException() {
-        every { clientService.clientOf(clientId) } returns null
-
-        Assertions.assertThrows(
-            InvalidClientException::class.java
-        ) { grantingCall.authorize(clientCredentialsRequest) }
-    }
-
-    @Test
     fun invalidClientException() {
-        val client = Client(clientId, emptySet(), emptySet(), setOf(AuthorizedGrantType.CLIENT_CREDENTIALS))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns false
+        every { clientService.clientOf(clientId, clientSecret) } returns null
 
         Assertions.assertThrows(
             InvalidClientException::class.java
@@ -119,8 +107,7 @@ internal class ClientCredentialsTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), null, clientId, requestScopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), null, clientId, requestScopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { refreshTokenConverter.convertToToken(null, clientId, requestScopes) } returns refreshToken
         every { accessTokenConverter.convertToToken(null, clientId, requestScopes, refreshToken) } returns accessToken
 

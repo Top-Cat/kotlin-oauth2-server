@@ -90,8 +90,7 @@ internal class RefreshTokenGrantTokenServiceTest {
         val accessToken = AccessToken("test", "bearer", Instant.now(), identity, clientId, scopes, newRefreshToken)
         val identity = Identity(username)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { tokenStore.refreshToken(refreshToken) } returns token
         every { identityService.identityOf(client, username) } returns identity
         every { refreshTokenConverter.convertToToken(token) } returns newRefreshToken
@@ -107,8 +106,7 @@ internal class RefreshTokenGrantTokenServiceTest {
     fun missingRefreshToken() {
         val client = Client(clientId, setOf("scope1", "scope2"), setOf(), setOf(AuthorizedGrantType.REFRESH_TOKEN))
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
 
         val refreshTokenRequest = RefreshTokenRequest(
                 clientId,
@@ -122,19 +120,8 @@ internal class RefreshTokenGrantTokenServiceTest {
     }
 
     @Test
-    fun nonExistingClientException() {
-        every { clientService.clientOf(clientId) } returns null
-
-        Assertions.assertThrows(
-                InvalidClientException::class.java
-        ) { grantingCall.refresh(refreshTokenRequest) }
-    }
-
-    @Test
     fun invalidClientException() {
-        val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.REFRESH_TOKEN))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns false
+        every { clientService.clientOf(clientId, clientSecret) } returns null
 
         Assertions.assertThrows(
                 InvalidClientException::class.java
@@ -146,8 +133,7 @@ internal class RefreshTokenGrantTokenServiceTest {
         val client = Client(clientId, setOf("scope1", "scope2"), setOf(), setOf(AuthorizedGrantType.REFRESH_TOKEN))
         val token = RefreshToken("test", Instant.now(), identity, "wrong-client", scopes)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { tokenStore.refreshToken(refreshToken) } returns token
 
         Assertions.assertThrows(

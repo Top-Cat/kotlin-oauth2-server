@@ -91,8 +91,7 @@ internal class PasswordGrantTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), identity, clientId, requestScopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), identity, clientId, requestScopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { identityService.validCredentials(client, identity, password) } returns true
         every { identityService.allowedScopes(client, identity, requestScopes) } returns scopes
@@ -105,19 +104,8 @@ internal class PasswordGrantTokenServiceTest {
     }
 
     @Test
-    fun nonExistingClientException() {
-        every { clientService.clientOf(clientId) } returns null
-
-        assertThrows(
-                InvalidClientException::class.java
-        ) { grantingCall.authorize(passwordGrantRequest) }
-    }
-
-    @Test
     fun invalidClientException() {
-        val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.PASSWORD))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns false
+        every { clientService.clientOf(clientId, clientSecret) } returns null
 
         assertThrows(
                 InvalidClientException::class.java
@@ -135,8 +123,7 @@ internal class PasswordGrantTokenServiceTest {
         )
 
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.PASSWORD))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
 
         assertThrows(
                 InvalidRequestException::class.java
@@ -154,8 +141,7 @@ internal class PasswordGrantTokenServiceTest {
         )
 
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.PASSWORD))
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
 
         assertThrows(
                 InvalidRequestException::class.java
@@ -167,8 +153,7 @@ internal class PasswordGrantTokenServiceTest {
         val client = Client(clientId, setOf(), setOf(), setOf(AuthorizedGrantType.PASSWORD))
         val identity = Identity(username)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { identityService.validCredentials(client, identity, password) } returns false
 
@@ -182,8 +167,7 @@ internal class PasswordGrantTokenServiceTest {
         val client = Client(clientId, setOf("scope1", "scope2"), setOf(), setOf(AuthorizedGrantType.PASSWORD))
         val identity = Identity(username)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { identityService.validCredentials(client, identity, password) } returns true
         every { identityService.allowedScopes(client, identity, scopes) } returns setOf()
@@ -198,8 +182,7 @@ internal class PasswordGrantTokenServiceTest {
         val client = Client(clientId, setOf("scope3"), setOf(), setOf(AuthorizedGrantType.PASSWORD))
         val identity = Identity(username)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { identityService.validCredentials(client, identity, password) } returns true
         every { identityService.allowedScopes(client, identity, scopes) } returns scopes
@@ -225,8 +208,7 @@ internal class PasswordGrantTokenServiceTest {
         val refreshToken = RefreshToken("test", Instant.now(), identity, clientId, requestScopes)
         val accessToken = AccessToken("test", "bearer", Instant.now(), identity, clientId, requestScopes, refreshToken)
 
-        every { clientService.clientOf(clientId) } returns client
-        every { clientService.validClient(client, clientSecret) } returns true
+        every { clientService.clientOf(clientId, clientSecret) } returns client
         every { identityService.identityOf(client, username) } returns identity
         every { identityService.validCredentials(client, identity, password) } returns true
         every { identityService.allowedScopes(client, identity, requestScopes) } returns requestScopes

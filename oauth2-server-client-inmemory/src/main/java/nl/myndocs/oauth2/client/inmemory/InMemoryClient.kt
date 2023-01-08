@@ -14,15 +14,17 @@ class InMemoryClient : ClientService {
         return this
     }
 
-    override fun clientOf(clientId: String): Client? {
-        return clients.filter { it.clientId == clientId }
-                .map { client -> nl.myndocs.oauth2.client.Client(client.clientId!!, client.scopes, client.redirectUris, client.authorizedGrantTypes) }
-                .firstOrNull()
-    }
+    private fun toClient(client: ClientConfiguration) =
+        Client(client.clientId!!, client.scopes, client.redirectUris, client.authorizedGrantTypes)
 
-    override fun validClient(client: Client, clientSecret: String): Boolean {
-        return configuredClient(client.clientId)!!.clientSecret == clientSecret
-    }
+    override fun clientOf(clientId: String, clientSecret: String) =
+        clients.firstOrNull { it.clientId == clientId && it.clientSecret == clientSecret }?.let(::toClient)
+
+    override fun clientOf(clientId: String) =
+        configuredClient(clientId)?.let(::toClient)
+
+    override fun validClient(client: Client, clientSecret: String) =
+        configuredClient(client.clientId)!!.clientSecret == clientSecret
 
     private fun configuredClient(clientId: String) =
             clients.firstOrNull { it.clientId == clientId }
