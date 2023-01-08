@@ -1,9 +1,13 @@
 package nl.myndocs.oauth2.token
 
+import nl.myndocs.oauth2.identity.TokenInfo
+
 interface TokenStore {
     fun storeAccessToken(accessToken: AccessToken)
 
     fun accessToken(token: String): AccessToken?
+
+    fun tokenInfo(token: String): TokenInfo?
 
     fun revokeAccessToken(token: String)
 

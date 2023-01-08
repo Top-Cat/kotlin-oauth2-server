@@ -12,7 +12,7 @@ It encourages to adapt to existing implementations instead the other way around.
 
 ```xml
 <properties>
-    <myndocs.oauth.version>0.7.2-TC</myndocs.oauth.version>
+    <myndocs.oauth.version>0.7.3-TC</myndocs.oauth.version>
 </properties>
 
 <dependencies>

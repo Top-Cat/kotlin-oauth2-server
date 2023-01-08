@@ -7,7 +7,7 @@
     <groupId>nl.myndocs</groupId>
     <artifactId>kotlin-oauth2-server</artifactId>
     <packaging>pom</packaging>
-    <version>0.7.2-TC</version>
+    <version>0.7.3-TC</version>
     <name>Kotlin OAuth2 server</name>
     <description>Flexible OAuth2 implementation</description>
     <url>https://github.com/myndocs/kotlin-oauth2-server</url>

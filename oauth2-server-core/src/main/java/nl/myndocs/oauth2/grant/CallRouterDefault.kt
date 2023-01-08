@@ -2,11 +2,9 @@ package nl.myndocs.oauth2.grant
 
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.exception.InvalidClientException
-import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.identity.Identity
-import nl.myndocs.oauth2.identity.TokenInfo
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientCredentialsRequest
@@ -122,29 +120,16 @@ fun GrantingCall.validateScopes(
     }
 }
 
-fun GrantingCall.tokenInfo(accessToken: String): TokenInfo {
-    val storedAccessToken = tokenStore.accessToken(accessToken) ?: throw InvalidGrantException()
-    val client = clientService.clientOf(storedAccessToken.clientId) ?: throw InvalidClientException()
+fun GrantingCall.tokenInfo(accessToken: String) = tokenStore.tokenInfo(accessToken)
 
-    return TokenInfo(
-        storedAccessToken.identity,
-        client,
-        storedAccessToken.scopes
-    )
-}
-
-fun GrantingCall.throwExceptionIfUnverifiedClient(clientRequest: ClientRequest) {
+fun GrantingCall.throwExceptionIfUnverifiedClient(clientRequest: ClientRequest): Client {
     val clientId = clientRequest.clientId
         ?: throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("client_id"))
 
     val clientSecret = clientRequest.clientSecret
         ?: throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("client_secret"))
 
-    val client = clientService.clientOf(clientId) ?: throw InvalidClientException()
-
-    if (!clientService.validClient(client, clientSecret)) {
-        throw InvalidClientException()
-    }
+    return clientService.clientOf(clientId, clientSecret) ?: throw InvalidClientException()
 }
 
 fun GrantingCall.scopesAllowed(clientScopes: Set<String>, requestedScopes: Set<String>): Boolean {

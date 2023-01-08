@@ -1,7 +1,11 @@
 package nl.myndocs.oauth2.grant
 
 import nl.myndocs.oauth2.client.AuthorizedGrantType
-import nl.myndocs.oauth2.exception.*
+import nl.myndocs.oauth2.exception.InvalidClientException
+import nl.myndocs.oauth2.exception.InvalidGrantException
+import nl.myndocs.oauth2.exception.InvalidIdentityException
+import nl.myndocs.oauth2.exception.InvalidRequestException
+import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.ClientCredentialsRequest
 import nl.myndocs.oauth2.request.PasswordGrantRequest
@@ -14,7 +18,7 @@ import nl.myndocs.oauth2.token.AccessToken
  * @throws InvalidScopeException
  */
 fun GrantingCall.authorize(passwordGrantRequest: PasswordGrantRequest): AccessToken {
-    throwExceptionIfUnverifiedClient(passwordGrantRequest)
+    val requestedClient = throwExceptionIfUnverifiedClient(passwordGrantRequest)
 
     if (passwordGrantRequest.username == null) {
         throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("username"))
@@ -23,8 +27,6 @@ fun GrantingCall.authorize(passwordGrantRequest: PasswordGrantRequest): AccessTo
     if (passwordGrantRequest.password == null) {
         throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("password"))
     }
-
-    val requestedClient = clientService.clientOf(passwordGrantRequest.clientId!!) ?: throw InvalidClientException()
 
     val authorizedGrantType = AuthorizedGrantType.PASSWORD
     if (!requestedClient.authorizedGrantTypes.contains(authorizedGrantType)) {
@@ -105,9 +107,7 @@ fun GrantingCall.authorize(authorizationCodeRequest: AuthorizationCodeRequest): 
 }
 
 fun GrantingCall.authorize(clientCredentialsRequest: ClientCredentialsRequest): AccessToken {
-    throwExceptionIfUnverifiedClient(clientCredentialsRequest)
-
-    val requestedClient = clientService.clientOf(clientCredentialsRequest.clientId!!) ?: throw InvalidClientException()
+    val requestedClient = throwExceptionIfUnverifiedClient(clientCredentialsRequest)
 
     val scopes = clientCredentialsRequest.scope
         ?.let { ScopeParser.parseScopes(it).toSet() }
@@ -115,7 +115,7 @@ fun GrantingCall.authorize(clientCredentialsRequest: ClientCredentialsRequest): 
 
     val accessToken = converters.accessTokenConverter.convertToToken(
         identity = null,
-        clientId = clientCredentialsRequest.clientId,
+        clientId = clientCredentialsRequest.clientId!!,
         requestedScopes = scopes,
         refreshToken = converters.refreshTokenConverter.convertToToken(
             identity = null,
