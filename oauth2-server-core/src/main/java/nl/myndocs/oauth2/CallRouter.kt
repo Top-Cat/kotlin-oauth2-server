@@ -1,7 +1,12 @@
 package nl.myndocs.oauth2
 
 import nl.myndocs.oauth2.authenticator.Credentials
-import nl.myndocs.oauth2.exception.*
+import nl.myndocs.oauth2.exception.InvalidGrantException
+import nl.myndocs.oauth2.exception.InvalidIdentityException
+import nl.myndocs.oauth2.exception.InvalidRequestException
+import nl.myndocs.oauth2.exception.NoRoutesFoundException
+import nl.myndocs.oauth2.exception.OauthException
+import nl.myndocs.oauth2.exception.toMap
 import nl.myndocs.oauth2.grant.Granter
 import nl.myndocs.oauth2.grant.GrantingCall
 import nl.myndocs.oauth2.grant.redirect
@@ -144,7 +149,7 @@ class CallRouter(
 
     private fun routeAuthorizeEndpoint(callContext: CallContext, credentials: Credentials?): RedirectRouterResponse {
         try {
-            if (!arrayOf(METHOD_GET, METHOD_POST).contains(callContext.method.toLowerCase())) {
+            if (!arrayOf(METHOD_GET, METHOD_POST).contains(callContext.method.lowercase())) {
                 return RedirectRouterResponse(false)
             }
 
@@ -169,7 +174,7 @@ class CallRouter(
     }
 
     private fun routeTokenInfoEndpoint(callContext: CallContext) {
-        if (callContext.method.toLowerCase() != METHOD_GET) {
+        if (callContext.method.lowercase() != METHOD_GET) {
             return
         }
 

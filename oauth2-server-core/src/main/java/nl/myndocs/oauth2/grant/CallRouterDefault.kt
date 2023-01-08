@@ -1,5 +1,6 @@
 package nl.myndocs.oauth2.grant
 
+import nl.myndocs.oauth2.authenticator.Credentials
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.exception.InvalidGrantException
@@ -7,17 +8,47 @@ import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.identity.TokenInfo
-import nl.myndocs.oauth2.request.*
+import nl.myndocs.oauth2.request.AuthorizationCodeRequest
+import nl.myndocs.oauth2.request.CallContext
+import nl.myndocs.oauth2.request.ClientCredentialsRequest
+import nl.myndocs.oauth2.request.ClientRequest
+import nl.myndocs.oauth2.request.PasswordGrantRequest
+import nl.myndocs.oauth2.request.RefreshTokenRequest
+import nl.myndocs.oauth2.request.auth.BasicAuth
+import nl.myndocs.oauth2.request.headerCaseInsensitive
+
+class ClientInfo(private val ctx: CallContext) {
+    val clientId by lazy {
+        ctx.formParameters["client_id"] ?: headerValues?.username
+    }
+
+    val clientSecret by lazy {
+        ctx.formParameters["client_secret"] ?: headerValues?.password
+    }
+
+    private val headerValues by lazy {
+        parseHeaders(ctx)
+    }
+
+    private fun parseHeaders(ctx: CallContext): Credentials? {
+        ctx.headerCaseInsensitive("authorization")?.let { authHeader ->
+            BasicAuth.parseCredentials(authHeader)
+        }
+        return null
+    }
+}
 
 fun GrantingCall.grantPassword() = granter("password") {
     val accessToken = authorize(
-        PasswordGrantRequest(
-            callContext.formParameters["client_id"],
-            callContext.formParameters["client_secret"],
-            callContext.formParameters["username"],
-            callContext.formParameters["password"],
-            callContext.formParameters["scope"]
-        )
+        ClientInfo(callContext).let { ci ->
+            PasswordGrantRequest(
+                ci.clientId,
+                ci.clientSecret,
+                callContext.formParameters["username"],
+                callContext.formParameters["password"],
+                callContext.formParameters["scope"]
+            )
+        }
     )
 
     callContext.respondHeader("Cache-Control", "no-store")
@@ -27,11 +58,13 @@ fun GrantingCall.grantPassword() = granter("password") {
 
 fun GrantingCall.grantClientCredentials() = granter("client_credentials") {
     val accessToken = authorize(
-        ClientCredentialsRequest(
-            callContext.formParameters["client_id"],
-            callContext.formParameters["client_secret"],
-            callContext.formParameters["scope"]
-        )
+        ClientInfo(callContext).let { ci ->
+            ClientCredentialsRequest(
+                ci.clientId,
+                ci.clientSecret,
+                callContext.formParameters["scope"]
+            )
+        }
     )
 
     callContext.respondHeader("Cache-Control", "no-store")
@@ -41,11 +74,13 @@ fun GrantingCall.grantClientCredentials() = granter("client_credentials") {
 
 fun GrantingCall.grantRefreshToken() = granter("refresh_token") {
     val accessToken = refresh(
-        RefreshTokenRequest(
-            callContext.formParameters["client_id"],
-            callContext.formParameters["client_secret"],
-            callContext.formParameters["refresh_token"]
-        )
+        ClientInfo(callContext).let { ci ->
+            RefreshTokenRequest(
+                ci.clientId,
+                ci.clientSecret,
+                callContext.formParameters["refresh_token"]
+            )
+        }
     )
 
     callContext.respondHeader("Cache-Control", "no-store")
@@ -55,12 +90,14 @@ fun GrantingCall.grantRefreshToken() = granter("refresh_token") {
 
 fun GrantingCall.grantAuthorizationCode() = granter("authorization_code") {
     val accessToken = authorize(
-        AuthorizationCodeRequest(
-            callContext.formParameters["client_id"],
-            callContext.formParameters["client_secret"],
-            callContext.formParameters["code"],
-            callContext.formParameters["redirect_uri"]
-        )
+        ClientInfo(callContext).let { ci ->
+            AuthorizationCodeRequest(
+                ci.clientId,
+                ci.clientSecret,
+                callContext.formParameters["code"],
+                callContext.formParameters["redirect_uri"]
+            )
+        }
     )
 
     callContext.respondHeader("Cache-Control", "no-store")
@@ -91,10 +128,9 @@ fun GrantingCall.validateScopes(
 fun GrantingCall.tokenInfo(accessToken: String): TokenInfo {
     val storedAccessToken = tokenStore.accessToken(accessToken) ?: throw InvalidGrantException()
     val client = clientService.clientOf(storedAccessToken.clientId) ?: throw InvalidClientException()
-    val identity = storedAccessToken.identity?.let { identityService.identityOf(client, it.username) }
 
     return TokenInfo(
-        identity,
+        storedAccessToken.identity,
         client,
         storedAccessToken.scopes
     )
