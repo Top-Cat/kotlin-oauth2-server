@@ -1,6 +1,5 @@
 package nl.myndocs.oauth2.grant
 
-import nl.myndocs.oauth2.authenticator.Credentials
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.exception.InvalidGrantException
@@ -30,12 +29,10 @@ class ClientInfo(private val ctx: CallContext) {
         parseHeaders(ctx)
     }
 
-    private fun parseHeaders(ctx: CallContext): Credentials? {
+    private fun parseHeaders(ctx: CallContext) =
         ctx.headerCaseInsensitive("authorization")?.let { authHeader ->
             BasicAuth.parseCredentials(authHeader)
         }
-        return null
-    }
 }
 
 fun GrantingCall.grantPassword() = granter("password") {
