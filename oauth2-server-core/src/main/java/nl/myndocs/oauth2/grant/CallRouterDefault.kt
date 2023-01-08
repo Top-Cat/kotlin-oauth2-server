@@ -2,6 +2,7 @@ package nl.myndocs.oauth2.grant
 
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.exception.InvalidClientException
+import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.identity.Identity
@@ -120,7 +121,7 @@ fun GrantingCall.validateScopes(
     }
 }
 
-fun GrantingCall.tokenInfo(accessToken: String) = tokenStore.tokenInfo(accessToken)
+fun GrantingCall.tokenInfo(accessToken: String) = tokenStore.tokenInfo(accessToken) ?: throw InvalidGrantException()
 
 fun GrantingCall.throwExceptionIfUnverifiedClient(clientRequest: ClientRequest): Client {
     val clientId = clientRequest.clientId
