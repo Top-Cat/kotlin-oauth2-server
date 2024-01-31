@@ -2,7 +2,6 @@ package nl.myndocs.oauth2.tokenstore.inmemory
 
 import nl.myndocs.oauth2.device.DeviceCode
 import nl.myndocs.oauth2.device.DeviceCodeStore
-import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.ExpirableToken
 
 class InMemoryDeviceCodeStore : DeviceCodeStore {
@@ -13,26 +12,21 @@ class InMemoryDeviceCodeStore : DeviceCodeStore {
     }
 
     override fun getForUserCode(userCode: String): DeviceCode? =
-            locateToken(deviceCodes, userCode)
+        locateToken(deviceCodes, userCode)
 
-    fun completeDeviceCode(userCode: String, identity: Identity) {
-        deviceCodes.computeIfPresent(userCode) { _, deviceCode ->
-            deviceCode.copy(complete = true, identity = identity)
-        }
-    }
-
-    override fun consumeIfComplete(deviceCode: String) =
+    override fun getForDeviceCode(deviceCode: String) =
         deviceCodes.values.firstOrNull { it.deviceCode == deviceCode }?.let {
-            if (it.complete || it.expired()) {
-                deviceCodes.remove(it.userCode)
-            }
-
             if (it.expired()) {
+                deviceCodes.remove(it.userCode)
                 null
             } else {
                 it
             }
         }
+
+    override fun removeDeviceCode(deviceCode: DeviceCode) {
+        deviceCodes.remove(deviceCode.userCode)
+    }
 
     private fun <T : ExpirableToken> locateToken(tokens: MutableMap<String, T>, token: String): T? {
         var tokenFromMap = tokens[token]

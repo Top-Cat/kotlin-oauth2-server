@@ -138,16 +138,17 @@ fun GrantingCall.authorize(deviceCodeRequest: DeviceCodeRequest): AccessToken {
         throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("device_code"))
     }
 
-    val deviceCode = deviceCodeStore.consumeIfComplete(deviceCodeRequest.deviceCode)
+    val deviceCode = deviceCodeStore.getForDeviceCode(deviceCodeRequest.deviceCode)
         ?: throw InvalidGrantException()
 
     deviceCode.complete || throw AuthorizationPendingException("The user has not yet completed authorization")
-    val identity = deviceCode.identity ?: throw InvalidGrantException()
+    deviceCodeStore.removeDeviceCode(deviceCode)
 
     if (deviceCode.clientId != deviceCodeRequest.clientId) {
         throw InvalidGrantException()
     }
 
+    val identity = deviceCode.identity ?: throw InvalidGrantException()
     val scopes = ScopeParser.parseScopes(deviceCode.scopes)
 
     val accessToken = converters.accessTokenConverter.convertToToken(
