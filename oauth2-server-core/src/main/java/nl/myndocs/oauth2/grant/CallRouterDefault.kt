@@ -6,11 +6,11 @@ import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.identity.Identity
-import nl.myndocs.oauth2.identity.TokenInfo
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientCredentialsRequest
 import nl.myndocs.oauth2.request.ClientRequest
+import nl.myndocs.oauth2.request.DeviceCodeRequest
 import nl.myndocs.oauth2.request.PasswordGrantRequest
 import nl.myndocs.oauth2.request.RefreshTokenRequest
 import nl.myndocs.oauth2.request.auth.BasicAuth
@@ -76,6 +76,22 @@ fun GrantingCall.grantRefreshToken() = granter("refresh_token") {
                 ci.clientId,
                 ci.clientSecret,
                 callContext.formParameters["refresh_token"]
+            )
+        }
+    )
+
+    callContext.respondHeader("Cache-Control", "no-store")
+    callContext.respondHeader("Pragma", "no-cache")
+    callContext.respondJson(accessTokenResponder.createResponse(accessToken))
+}
+
+fun GrantingCall.grantDeviceCode() = granter("device_code") {
+    val accessToken = authorize(
+        ClientInfo(callContext).let { ci ->
+            DeviceCodeRequest(
+                ci.clientId,
+                ci.clientSecret,
+                callContext.formParameters["device_code"]
             )
         }
     )

@@ -51,5 +51,7 @@ enum class OauthError(val errorName: String) {
      * The requested scope is invalid, unknown, malformed, or
      * exceeds the scope granted by the resource owner.
      */
-    INVALID_SCOPE("invalid_scope")
+    INVALID_SCOPE("invalid_scope"),
+
+    AUTHORIZATION_PENDING("authorization_pending")
 }

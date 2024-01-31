@@ -8,6 +8,8 @@ import io.mockk.verify
 import nl.myndocs.oauth2.client.AuthorizedGrantType
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.client.ClientService
+import nl.myndocs.oauth2.device.DeviceCodeConverter
+import nl.myndocs.oauth2.device.DeviceCodeStore
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.grant.GrantingCall
 import nl.myndocs.oauth2.grant.authorize
@@ -15,6 +17,7 @@ import nl.myndocs.oauth2.identity.IdentityService
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientCredentialsRequest
 import nl.myndocs.oauth2.response.AccessTokenResponder
+import nl.myndocs.oauth2.response.DeviceCodeResponder
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import nl.myndocs.oauth2.token.TokenStore
@@ -38,6 +41,8 @@ internal class ClientCredentialsTokenServiceTest {
     lateinit var clientService: ClientService
     @RelaxedMockK
     lateinit var tokenStore: TokenStore
+    @RelaxedMockK
+    lateinit var deviceCodeStore: DeviceCodeStore
     @MockK
     lateinit var accessTokenConverter: AccessTokenConverter
     @MockK
@@ -45,7 +50,11 @@ internal class ClientCredentialsTokenServiceTest {
     @MockK
     lateinit var codeTokenConverter: CodeTokenConverter
     @MockK
+    lateinit var deviceCodeConverter: DeviceCodeConverter
+    @MockK
     lateinit var accessTokenResponder: AccessTokenResponder
+    @MockK
+    lateinit var deviceCodeResponser: DeviceCodeResponder
 
     lateinit var grantingCall: GrantingCall
 
@@ -56,12 +65,15 @@ internal class ClientCredentialsTokenServiceTest {
             override val identityService = this@ClientCredentialsTokenServiceTest.identityService
             override val clientService = this@ClientCredentialsTokenServiceTest.clientService
             override val tokenStore = this@ClientCredentialsTokenServiceTest.tokenStore
+            override val deviceCodeStore = this@ClientCredentialsTokenServiceTest.deviceCodeStore
             override val converters = Converters(
-                    this@ClientCredentialsTokenServiceTest.accessTokenConverter,
-                    this@ClientCredentialsTokenServiceTest.refreshTokenConverter,
-                    this@ClientCredentialsTokenServiceTest.codeTokenConverter
+                this@ClientCredentialsTokenServiceTest.accessTokenConverter,
+                this@ClientCredentialsTokenServiceTest.refreshTokenConverter,
+                this@ClientCredentialsTokenServiceTest.codeTokenConverter,
+                this@ClientCredentialsTokenServiceTest.deviceCodeConverter
             )
             override val accessTokenResponder = this@ClientCredentialsTokenServiceTest.accessTokenResponder
+            override val deviceCodeResponder = this@ClientCredentialsTokenServiceTest.deviceCodeResponser
         }
     }
     private val clientId = "client-foo"

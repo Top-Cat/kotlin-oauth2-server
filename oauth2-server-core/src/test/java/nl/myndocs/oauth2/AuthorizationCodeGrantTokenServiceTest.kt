@@ -7,6 +7,8 @@ import io.mockk.junit5.MockKExtension
 import nl.myndocs.oauth2.client.AuthorizedGrantType
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.client.ClientService
+import nl.myndocs.oauth2.device.DeviceCodeConverter
+import nl.myndocs.oauth2.device.DeviceCodeStore
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidRequestException
@@ -17,6 +19,7 @@ import nl.myndocs.oauth2.identity.IdentityService
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.response.AccessTokenResponder
+import nl.myndocs.oauth2.response.DeviceCodeResponder
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.CodeToken
 import nl.myndocs.oauth2.token.RefreshToken
@@ -41,6 +44,8 @@ internal class AuthorizationCodeGrantTokenServiceTest {
     lateinit var clientService: ClientService
     @RelaxedMockK
     lateinit var tokenStore: TokenStore
+    @RelaxedMockK
+    lateinit var deviceCodeStore: DeviceCodeStore
     @MockK
     lateinit var accessTokenConverter: AccessTokenConverter
     @MockK
@@ -48,7 +53,11 @@ internal class AuthorizationCodeGrantTokenServiceTest {
     @MockK
     lateinit var codeTokenConverter: CodeTokenConverter
     @MockK
+    lateinit var deviceCodeConverter: DeviceCodeConverter
+    @MockK
     lateinit var accessTokenResponder: AccessTokenResponder
+    @MockK
+    lateinit var deviceCodeResponser: DeviceCodeResponder
 
     lateinit var grantingCall: GrantingCall
 
@@ -59,12 +68,15 @@ internal class AuthorizationCodeGrantTokenServiceTest {
             override val identityService = this@AuthorizationCodeGrantTokenServiceTest.identityService
             override val clientService = this@AuthorizationCodeGrantTokenServiceTest.clientService
             override val tokenStore = this@AuthorizationCodeGrantTokenServiceTest.tokenStore
+            override val deviceCodeStore = this@AuthorizationCodeGrantTokenServiceTest.deviceCodeStore
             override val converters = Converters(
-                    this@AuthorizationCodeGrantTokenServiceTest.accessTokenConverter,
-                    this@AuthorizationCodeGrantTokenServiceTest.refreshTokenConverter,
-                    this@AuthorizationCodeGrantTokenServiceTest.codeTokenConverter
+                this@AuthorizationCodeGrantTokenServiceTest.accessTokenConverter,
+                this@AuthorizationCodeGrantTokenServiceTest.refreshTokenConverter,
+                this@AuthorizationCodeGrantTokenServiceTest.codeTokenConverter,
+                this@AuthorizationCodeGrantTokenServiceTest.deviceCodeConverter
             )
             override val accessTokenResponder = this@AuthorizationCodeGrantTokenServiceTest.accessTokenResponder
+            override val deviceCodeResponder = this@AuthorizationCodeGrantTokenServiceTest.deviceCodeResponser
         }
     }
 

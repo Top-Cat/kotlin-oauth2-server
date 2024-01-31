@@ -7,12 +7,15 @@ import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.NoRoutesFoundException
 import nl.myndocs.oauth2.exception.OauthException
 import nl.myndocs.oauth2.exception.toMap
+import nl.myndocs.oauth2.grant.ClientInfo
 import nl.myndocs.oauth2.grant.Granter
 import nl.myndocs.oauth2.grant.GrantingCall
 import nl.myndocs.oauth2.grant.redirect
+import nl.myndocs.oauth2.grant.throwExceptionIfUnverifiedClient
 import nl.myndocs.oauth2.grant.tokenInfo
 import nl.myndocs.oauth2.identity.TokenInfo
 import nl.myndocs.oauth2.request.CallContext
+import nl.myndocs.oauth2.request.ClientRequest
 import nl.myndocs.oauth2.request.RedirectAuthorizationCodeRequest
 import nl.myndocs.oauth2.request.RedirectTokenRequest
 import nl.myndocs.oauth2.request.headerCaseInsensitive
@@ -23,6 +26,7 @@ class CallRouter(
     val tokenEndpoint: String,
     val authorizeEndpoint: String,
     val tokenInfoEndpoint: String,
+    val deviceCodeEndpoint: String,
     private val tokenInfoCallback: (TokenInfo) -> Map<String, Any?>,
     private val granters: List<GrantingCall.() -> Granter>,
     private val grantingCallFactory: (CallContext) -> GrantingCall
@@ -41,6 +45,7 @@ class CallRouter(
         when (callContext.path) {
             tokenEndpoint -> routeTokenEndpoint(callContext)
             tokenInfoEndpoint -> routeTokenInfoEndpoint(callContext)
+            deviceCodeEndpoint -> routeDeviceCodeEndpoint(callContext)
         }
     }
 
@@ -52,7 +57,7 @@ class CallRouter(
     }
 
     private fun routeTokenEndpoint(callContext: CallContext) {
-        if (callContext.method.toLowerCase() != METHOD_POST) {
+        if (callContext.method.lowercase() != METHOD_POST) {
             return
         }
 
@@ -78,6 +83,32 @@ class CallRouter(
             callContext.respondStatus(STATUS_BAD_REQUEST)
             callContext.respondJson(oauthException.toMap())
         }
+    }
+
+    private fun routeDeviceCodeEndpoint(callContext: CallContext) {
+        if (callContext.method.lowercase() != METHOD_POST) {
+            return
+        }
+
+        val clientInfo = ClientInfo(callContext)
+        val clientId = clientInfo.clientId ?: throw InvalidRequestException("'client_id' not given")
+        val scope = callContext.formParameters["scope"] ?: throw InvalidRequestException("'scope' not given")
+
+        val grantingCall = grantingCallFactory(callContext)
+
+        grantingCall.throwExceptionIfUnverifiedClient(object : ClientRequest {
+            override val clientId = clientId
+            override val clientSecret = clientInfo.clientSecret ?: throw InvalidRequestException("'client_secret' not given")
+        })
+
+        val converter = grantingCall.converters.deviceCodeConverter
+        val store = grantingCall.deviceCodeStore
+        val responder = grantingCall.deviceCodeResponder
+
+        val deviceCode = converter.createDeviceCode(clientId, scope)
+        store.storeDeviceCode(deviceCode)
+
+        callContext.respondJson(responder.createResponse(deviceCode))
     }
 
     fun routeAuthorizationCodeRedirect(

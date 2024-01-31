@@ -1,6 +1,7 @@
 package nl.myndocs.oauth2.grant
 
 import nl.myndocs.oauth2.client.AuthorizedGrantType
+import nl.myndocs.oauth2.exception.AuthorizationPendingException
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidIdentityException
@@ -8,6 +9,7 @@ import nl.myndocs.oauth2.exception.InvalidRequestException
 import nl.myndocs.oauth2.exception.InvalidScopeException
 import nl.myndocs.oauth2.request.AuthorizationCodeRequest
 import nl.myndocs.oauth2.request.ClientCredentialsRequest
+import nl.myndocs.oauth2.request.DeviceCodeRequest
 import nl.myndocs.oauth2.request.PasswordGrantRequest
 import nl.myndocs.oauth2.scope.ScopeParser
 import nl.myndocs.oauth2.token.AccessToken
@@ -121,6 +123,41 @@ fun GrantingCall.authorize(clientCredentialsRequest: ClientCredentialsRequest): 
             identity = null,
             clientId = clientCredentialsRequest.clientId,
             requestedScopes = scopes
+        )
+    )
+
+    tokenStore.storeAccessToken(accessToken)
+
+    return accessToken
+}
+
+fun GrantingCall.authorize(deviceCodeRequest: DeviceCodeRequest): AccessToken {
+    throwExceptionIfUnverifiedClient(deviceCodeRequest)
+
+    if (deviceCodeRequest.deviceCode == null) {
+        throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("device_code"))
+    }
+
+    val deviceCode = deviceCodeStore.consumeIfComplete(deviceCodeRequest.deviceCode)
+        ?: throw InvalidGrantException()
+
+    deviceCode.complete || throw AuthorizationPendingException("The user has not yet completed authorization")
+    val identity = deviceCode.identity ?: throw InvalidGrantException()
+
+    if (deviceCode.clientId != deviceCodeRequest.clientId) {
+        throw InvalidGrantException()
+    }
+
+    val scopes = ScopeParser.parseScopes(deviceCode.scopes)
+
+    val accessToken = converters.accessTokenConverter.convertToToken(
+        identity,
+        deviceCode.clientId,
+        scopes,
+        converters.refreshTokenConverter.convertToToken(
+            identity,
+            deviceCode.clientId,
+            scopes
         )
     )
 

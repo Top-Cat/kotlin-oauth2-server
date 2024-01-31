@@ -10,6 +10,7 @@ internal object CallRouterBuilder {
         var tokenEndpoint: String = "/oauth/token"
         var authorizeEndpoint: String = "/oauth/authorize"
         var tokenInfoEndpoint: String = "/oauth/tokeninfo"
+        var deviceCodeEndpoint: String = "/oauth/devicecode"
         var tokenInfoCallback: (TokenInfo) -> Map<String, Any?> = { tokenInfo ->
             mapOf(
                 "username" to tokenInfo.identity?.username,
@@ -23,12 +24,14 @@ internal object CallRouterBuilder {
         configuration.tokenEndpoint,
         configuration.authorizeEndpoint,
         configuration.tokenInfoEndpoint,
+        configuration.deviceCodeEndpoint,
         configuration.tokenInfoCallback,
         listOf<GrantingCall.() -> Granter>(
             { grantPassword() },
             { grantAuthorizationCode() },
             { grantClientCredentials() },
-            { grantRefreshToken() }
+            { grantRefreshToken() },
+            { grantDeviceCode() }
         ) + configuration.granters,
         grantingCallFactory
     )

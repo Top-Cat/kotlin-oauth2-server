@@ -1,6 +1,9 @@
 package nl.myndocs.oauth2.config
 
 import nl.myndocs.oauth2.client.ClientService
+import nl.myndocs.oauth2.device.DeviceCodeConverter
+import nl.myndocs.oauth2.device.DeviceCodeStore
+import nl.myndocs.oauth2.device.UUIDDeviceCodeConverter
 import nl.myndocs.oauth2.grant.Granter
 import nl.myndocs.oauth2.grant.GrantingCall
 import nl.myndocs.oauth2.identity.IdentityService
@@ -8,6 +11,8 @@ import nl.myndocs.oauth2.identity.TokenInfo
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.response.AccessTokenResponder
 import nl.myndocs.oauth2.response.DefaultAccessTokenResponder
+import nl.myndocs.oauth2.response.DefaultDeviceCodeResponder
+import nl.myndocs.oauth2.response.DeviceCodeResponder
 import nl.myndocs.oauth2.token.TokenStore
 import nl.myndocs.oauth2.token.converter.*
 
@@ -52,6 +57,9 @@ object ConfigurationBuilder {
         var refreshTokenConverter: RefreshTokenConverter = UUIDRefreshTokenConverter()
         var codeTokenConverter: CodeTokenConverter = UUIDCodeTokenConverter()
         var accessTokenResponder: AccessTokenResponder = DefaultAccessTokenResponder
+        var deviceCodeStore: DeviceCodeStore? = null
+        var deviceCodeConverter: DeviceCodeConverter = UUIDDeviceCodeConverter()
+        var deviceCodeResponder: DeviceCodeResponder = DefaultDeviceCodeResponder
     }
 
     fun build(
@@ -66,12 +74,15 @@ object ConfigurationBuilder {
                 override val identityService = configuration.identityService!!
                 override val clientService = configuration.clientService!!
                 override val tokenStore = configuration.tokenStore!!
+                override val deviceCodeStore = configuration.deviceCodeStore!!
                 override val converters = Converters(
                     configuration.accessTokenConverter,
                     configuration.refreshTokenConverter,
-                    configuration.codeTokenConverter
+                    configuration.codeTokenConverter,
+                    configuration.deviceCodeConverter
                 )
                 override val accessTokenResponder = configuration.accessTokenResponder
+                override val deviceCodeResponder = configuration.deviceCodeResponder
             }
         }
         return Configuration(

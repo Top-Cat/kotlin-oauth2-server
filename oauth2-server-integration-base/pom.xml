@@ -5,7 +5,7 @@
     <parent>
         <artifactId>kotlin-oauth2-server</artifactId>
         <groupId>nl.myndocs</groupId>
-        <version>0.7.3-TC</version>
+        <version>0.7.4-TC</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,6 +44,11 @@
         <dependency>
             <groupId>nl.myndocs</groupId>
             <artifactId>oauth2-server-token-store-inmemory</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>nl.myndocs</groupId>
+            <artifactId>oauth2-server-device-code-store-inmemory</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

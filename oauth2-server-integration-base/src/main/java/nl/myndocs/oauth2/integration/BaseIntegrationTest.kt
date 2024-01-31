@@ -6,6 +6,7 @@ import nl.myndocs.oauth2.client.AuthorizedGrantType
 import nl.myndocs.oauth2.client.inmemory.InMemoryClient
 import nl.myndocs.oauth2.config.ConfigurationBuilder
 import nl.myndocs.oauth2.identity.inmemory.InMemoryIdentity
+import nl.myndocs.oauth2.tokenstore.inmemory.InMemoryDeviceCodeStore
 import nl.myndocs.oauth2.tokenstore.inmemory.InMemoryTokenStore
 import okhttp3.Credentials
 import okhttp3.FormBody
@@ -41,6 +42,7 @@ abstract class BaseIntegrationTest {
                     )
                 }
         tokenStore = InMemoryTokenStore(clientService)
+        deviceCodeStore = InMemoryDeviceCodeStore()
     }
 
     private val objectMapper = ObjectMapper().registerKotlinModule()
