@@ -44,5 +44,12 @@ fun Javalin.enableOauthServer(
                 callRouter.route(javalinCallContext)
             }
         }
+
+        path(callRouter.deviceCodeEndpoint) {
+            post { ctx ->
+                val javalinCallContext = JavalinCallContext(ctx)
+                callRouter.route(javalinCallContext)
+            }
+        }
     }
 }

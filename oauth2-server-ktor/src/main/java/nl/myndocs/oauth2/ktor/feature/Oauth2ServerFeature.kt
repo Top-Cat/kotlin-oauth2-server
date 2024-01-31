@@ -33,7 +33,8 @@ class Oauth2ServerFeature(configuration: Configuration) {
                 if (
                         arrayOf(
                                 configuration.callRouter.tokenEndpoint,
-                                configuration.callRouter.tokenInfoEndpoint
+                                configuration.callRouter.tokenInfoEndpoint,
+                                configuration.callRouter.deviceCodeEndpoint
                         ).contains(ktorCallContext.path)
                 ) {
                     feature.callRouter.route(ktorCallContext)

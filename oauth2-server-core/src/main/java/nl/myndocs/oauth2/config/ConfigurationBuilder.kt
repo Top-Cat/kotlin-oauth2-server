@@ -44,6 +44,12 @@ object ConfigurationBuilder {
                 callRouterConfiguration.tokenInfoCallback = value
             }
 
+        var deviceCodeEndpoint: String
+            get() = callRouterConfiguration.deviceCodeEndpoint
+            set(value) {
+                callRouterConfiguration.deviceCodeEndpoint = value
+            }
+
         var granters: List<GrantingCall.() -> Granter>
             get() = callRouterConfiguration.granters
             set(value) {

@@ -34,4 +34,8 @@ fun Router.enableOauthServer(
     get(callRouter.tokenInfoEndpoint) {
         callRouter.route(HexagonCallContext(this))
     }
+
+    post(callRouter.deviceCodeEndpoint) {
+        callRouter.route(HexagonCallContext(this))
+    }
 }

@@ -45,6 +45,13 @@ fun RoutingHttpHandler.enableOauth2(
                 callRouter.route(callContext)
 
                 responseBuilder.build()
+            },
+            callRouter.deviceCodeEndpoint bind Method.POST to { request: Request ->
+                val responseBuilder = ResponseBuilder()
+                val callContext = Http4kCallContext(request, responseBuilder)
+                callRouter.route(callContext)
+
+                responseBuilder.build()
             }
     )
 }

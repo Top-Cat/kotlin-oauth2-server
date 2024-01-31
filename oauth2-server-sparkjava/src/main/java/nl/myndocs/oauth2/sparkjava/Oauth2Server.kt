@@ -48,5 +48,12 @@ object Oauth2Server {
 
             res.body()
         }
+
+        post(callRouter.deviceCodeEndpoint) { req, res ->
+            val sparkjavaCallContext = SparkjavaCallContext(req, res)
+            callRouter.route(sparkjavaCallContext)
+
+            res.body()
+        }
     }
 }
