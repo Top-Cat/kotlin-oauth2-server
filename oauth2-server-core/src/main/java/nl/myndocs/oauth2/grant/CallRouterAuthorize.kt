@@ -132,7 +132,7 @@ fun GrantingCall.authorize(clientCredentialsRequest: ClientCredentialsRequest): 
 }
 
 fun GrantingCall.authorize(deviceCodeRequest: DeviceCodeRequest): AccessToken {
-    throwExceptionIfUnverifiedClient(deviceCodeRequest)
+    val requestedClient = throwExceptionIfUnverifiedClient(deviceCodeRequest)
 
     if (deviceCodeRequest.deviceCode == null) {
         throw InvalidRequestException(INVALID_REQUEST_FIELD_MESSAGE.format("device_code"))
@@ -150,6 +150,8 @@ fun GrantingCall.authorize(deviceCodeRequest: DeviceCodeRequest): AccessToken {
 
     val identity = deviceCode.identity ?: throw InvalidGrantException()
     val scopes = ScopeParser.parseScopes(deviceCode.scopes)
+
+    validateScopes(requestedClient, identity, scopes)
 
     val accessToken = converters.accessTokenConverter.convertToToken(
         identity,
