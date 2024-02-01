@@ -8,6 +8,7 @@ class InMemoryDeviceCodeStore : DeviceCodeStore {
     private val deviceCodes = mutableMapOf<String, DeviceCode>()
 
     override fun storeDeviceCode(deviceCode: DeviceCode) {
+        removeExpiredTokens()
         deviceCodes[deviceCode.userCode] = deviceCode
     }
 
@@ -38,5 +39,9 @@ class InMemoryDeviceCodeStore : DeviceCodeStore {
         }
 
         return tokenFromMap
+    }
+
+    private fun removeExpiredTokens() {
+        deviceCodes.entries.removeAll { it.value.expired() }
     }
 }
