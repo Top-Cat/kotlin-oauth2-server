@@ -1,7 +1,7 @@
 package nl.myndocs.oauth2.ktor.feature.request
 
-import io.ktor.server.application.ApplicationCall
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.header
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
@@ -24,9 +24,9 @@ class KtorCallContext(val applicationCall: ApplicationCall) : CallContext {
             .filterValues { it != null }
             .mapValues { it.value!! }
 
-    override val queryParameters: Map<String, String> = applicationCall.request
-            .queryParameters
-            .toMap()
+    override val queryParameters: Map<String, String> =
+        runCatching { applicationCall.request.queryParameters.toMap() }
+            .getOrDefault(emptyMap())
             .filterValues { it.isNotEmpty() }
             .mapValues { it.value.first() }
 
